@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>獎狀領取系統</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+
+:root{
+  --blue:#0071e3;--blue-h:#0077ed;--blue-dim:rgba(0,113,227,.1);
+  --green:#34c759;
+  --amber:#b8922a;--amber-dim:rgba(184,146,42,.1);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,.1);
+  --t1:#1d1d1f;--t2:#3a3a3c;--t3:#6e6e73;--t4:#aeaeb2;
+  --bg:#f5f5f7;--card:#fff;--border:rgba(0,0,0,.08);
+  --r:18px;--r-sm:12px;
+  --sh-lg:0 20px 60px rgba(0,0,0,.10),0 4px 20px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+  background:var(--bg);color:var(--t1);min-height:100vh;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
+}
+
+nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(255,255,255,.84);
+  backdrop-filter:saturate(180%) blur(24px);
+  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-bottom:1px solid var(--border);
+  height:52px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.nav-brand em{color:var(--amber);font-style:normal}
+.nav-pills{display:flex;gap:4px}
+.nav-pill{font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;color:var(--t3);cursor:default;transition:all .22s}
+.nav-pill.on{background:var(--t1);color:#fff}
+
+.hero{padding:72px 24px 48px;text-align:center}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:14px;opacity:0;animation:up .55s .05s forwards}
+.hero h1{font-size:clamp(34px,5.5vw,60px);font-weight:700;letter-spacing:-1.5px;line-height:1.06;margin-bottom:18px;opacity:0;animation:up .55s .15s forwards}
+.hero p{font-size:17px;font-weight:300;color:var(--t3);max-width:480px;margin:0 auto;line-height:1.65;opacity:0;animation:up .55s .25s forwards}
+
+.layout{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:920px;width:100%;margin:0 auto;padding:0 24px 80px;align-items:start}
+@media(max-width:700px){.layout{grid-template-columns:1fr}}
+
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh-lg);border:1px solid var(--border);padding:36px 32px 32px;opacity:0}
+.card:nth-child(1){animation:up .55s .3s forwards}
+.card:nth-child(2){animation:up .55s .4s forwards}
+.step-badge{display:inline-flex;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--blue-dim);border-radius:20px;padding:4px 12px;margin-bottom:12px}
+.card-title{font-size:22px;font-weight:700;letter-spacing:-.4px}
+.card-sub{font-size:14px;color:var(--t3);margin-top:6px;line-height:1.5;margin-bottom:28px}
+
+.field{margin-bottom:18px}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+input{width:100%;font-family:inherit;font-size:16px;color:var(--t1);background:#f5f5f7;border:1.5px solid transparent;border-radius:var(--r-sm);padding:13px 16px;outline:none;transition:border-color .18s,box-shadow .18s,background .18s;-webkit-appearance:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.13);background:#fff}
+input::placeholder{color:var(--t4)}
+
+/* NUMBER RESULT */
+.num-result{display:none;border-radius:var(--r-sm);overflow:hidden;margin-bottom:20px;border:1px solid var(--border)}
+.num-result.show{display:block;animation:up .35s forwards}
+.num-result-header{padding:18px 20px 16px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff}
+.num-result-greeting{font-size:13px;opacity:.55;margin-bottom:3px}
+.num-result-name{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.num-cards{display:grid;grid-template-columns:1fr 1fr}
+.num-item{padding:18px 20px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border)}
+.num-item:nth-child(2){border-left:1px solid var(--border)}
+.num-type{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.num-type.poster{color:var(--amber)}
+.num-type.player{color:var(--purple)}
+.num-value{font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--t1)}
+.num-copy{font-size:11px;color:var(--t4);cursor:pointer;display:inline-flex;align-items:center;gap:3px;margin-top:6px;background:none;border:none;font-family:inherit;padding:0;transition:color .15s}
+.num-copy:hover{color:var(--blue)}
+.num-copy.copied{color:var(--green)}
+
+/* CERT RESULT */
+.cert-result{display:none;border-radius:var(--r-sm);overflow:hidden;margin-bottom:16px;border:1px solid var(--border)}
+.cert-result.show{display:block;animation:up .35s forwards}
+.cert-result-header{padding:24px 20px;text-align:center;background:linear-gradient(135deg,#4c1d95,#7c3aed)}
+.cert-result-icon{font-size:36px;margin-bottom:8px}
+.cert-result-name{font-size:20px;font-weight:700;color:#fff}
+.cert-result-tag{font-size:12px;color:rgba(255,255,255,.72);margin-top:4px;letter-spacing:.05em}
+.cert-result-body{padding:20px;display:flex;flex-direction:column;gap:10px}
+
+.btn-dl-link{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;font-family:inherit;font-size:16px;font-weight:600;
+  color:#fff;background:var(--purple);border-radius:14px;
+  padding:15px;text-decoration:none;
+  box-shadow:0 4px 14px rgba(124,58,237,.35);
+  transition:background .18s,transform .12s;
+}
+.btn-dl-link:hover{background:#6d28d9}
+.btn-dl-link:active{transform:scale(.984)}
+
+.mobile-hint{font-size:12px;color:var(--t3);background:var(--bg);border-radius:10px;padding:12px 14px;line-height:1.6;text-align:center}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:inherit;font-size:16px;font-weight:600;color:#fff;background:var(--blue);border:none;border-radius:14px;padding:15px;cursor:pointer;box-shadow:0 4px 14px rgba(0,113,227,.32);transition:background .18s,transform .12s,box-shadow .18s}
+.btn:hover{background:var(--blue-h);box-shadow:0 6px 20px rgba(0,113,227,.42)}
+.btn:active{transform:scale(.984)}
+.btn:disabled{background:#b0c4de;box-shadow:none;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--t2);border:1.5px solid var(--border);box-shadow:none}
+.btn-ghost:hover{background:var(--bg);box-shadow:none}
+
+/* LOADING SPINNER */
+.spinner{
+  display:none;align-items:center;justify-content:center;gap:10px;
+  font-size:14px;color:var(--t3);padding:14px;
+}
+.spinner.show{display:flex}
+.spin{
+  width:18px;height:18px;border:2px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.status-box{border-radius:var(--r-sm);padding:14px 16px;margin-bottom:18px;font-size:13px;line-height:1.5;display:none}
+.status-box.show{display:block;animation:up .25s forwards}
+.status-err{background:rgba(255,59,48,.08);color:#c0392b;border:1px solid rgba(255,59,48,.2)}
+
+footer{text-align:center;padding:28px 24px;font-size:12px;color:var(--t4);border-top:1px solid var(--border)}
+.hint{font-size:12px;color:var(--t4);text-align:center;margin-top:14px;line-height:1.6}
+.hint a{color:var(--blue);cursor:pointer;text-decoration:none}
+
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">🏅 <em>獎狀</em>領取系統</span>
+  <div class="nav-pills">
+    <span class="nav-pill on" id="np1">① 查詢編號</span>
+    <span class="nav-pill" id="np2">② 領取獎狀</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <p class="eyebrow">Certificate Portal</p>
+  <h1>獎狀領取系統</h1>
+  <p>輸入姓名取得壁報編號與選手編號，<br>再憑<b>選手編號</b>與隊長 Email 下載你的獎狀。</p>
+</header>
+
+<main class="layout">
+
+  <!-- CARD 1 -->
+  <div class="card">
+    <div class="step-badge">Step 01</div>
+    <div class="card-title">查詢我的編號</div>
+    <div class="card-sub">輸入你的姓名，系統將同時顯示壁報編號與選手編號。</div>
+
+    <div class="num-result" id="num-result">
+      <div class="num-result-header">
+        <div class="num-result-greeting">Hi，</div>
+        <div class="num-result-name" id="nr-name"></div>
+      </div>
+      <div class="num-cards">
+        <div class="num-item">
+          <div class="num-type poster">📋 壁報編號</div>
+          <div class="num-value" id="nr-poster">—</div>
+          <button class="num-copy" id="copy-poster" onclick="copyNum('poster')">⎘ 複製</button>
+        </div>
+        <div class="num-item">
+          <div class="num-type player">🏃 選手編號</div>
+          <div class="num-value" id="nr-player">—</div>
+          <button class="num-copy" id="copy-player" onclick="copyNum('player')">⎘ 複製</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-box status-err" id="s1-err">找不到此姓名，請確認輸入是否正確，或洽主辦單位。</div>
+
+    <div class="field">
+      <label for="i-name">學生姓名</label>
+      <input type="text" id="i-name" placeholder="請輸入中文姓名" maxlength="20" autocomplete="off"/>
+    </div>
+
+    <button class="btn" id="btn-query" onclick="queryNumber()">
+      <span>查詢我的編號</span><span>→</span>
+    </button>
+    <p class="hint">查到編號後，前往 <a onclick="scrollTo2()">Step 2</a> 下載獎狀。</p>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="card" id="card2">
+    <div class="step-badge">Step 02</div>
+    <div class="card-title">領取我的獎狀</div>
+    <div class="card-sub">輸入選手編號與隊長 Email，通過驗證即可下載獎狀。</div>
+
+    <!-- 成功結果 -->
+    <div class="cert-result" id="cert-result">
+      <div class="cert-result-header">
+        <div class="cert-result-icon">🏆</div>
+        <div class="cert-result-name" id="cert-name"></div>
+        <div class="cert-result-tag" id="cert-tag"></div>
+      </div>
+      <div class="cert-result-body">
+        <a id="btn-dl" class="btn-dl-link" href="#" target="_blank" rel="noopener">
+          ⬇ 下載獎狀
+        </a>
+        <div class="mobile-hint">
+          📱 手機用戶：點上方按鈕後，若開啟 Google Drive 預覽頁，<br>
+          點右上角 <b>⋮</b> → <b>在瀏覽器中開啟</b> → 點下載圖示儲存。
+        </div>
+        <button class="btn btn-ghost" onclick="resetCert()">← 重新驗證</button>
+      </div>
+    </div>
+
+    <!-- 驗證表單 -->
+    <div id="cert-form">
+      <div class="status-box status-err" id="s2-err"></div>
+      <div class="spinner" id="spinner">
+        <div class="spin"></div>驗證中，請稍候...
+      </div>
+
+      <div class="field">
+        <label for="i-num">選手編號</label>
+        <input type="text" id="i-num" placeholder="如：BM-101-1" maxlength="20" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label for="i-email">隊長 Email</label>
+        <input type="email" id="i-email" placeholder="captain@example.com" autocomplete="off"/>
+      </div>
+
+      <button class="btn" id="btn-cert" onclick="verifyCert()">驗證並領取獎狀 →</button>
+    </div>
+
+    <p class="hint">尚未查詢編號？請先完成 <a onclick="scrollTo1()">Step 1</a>。</p>
+  </div>
+
+</main>
+
+<footer>資料由後端伺服器驗證 · 原始碼不含任何學生個資</footer>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycby0zI8U57j6EmUQyfeiAd4jpxg9tI_jIxphkNzXT-cVprHCOcejlNQ_vPnUlmssrVHi/exec';
+
+// Step 1 資料仍從 API 查詢（只回傳編號，不含敏感資料）
+var LOCAL_DB = null;
+
+function queryNumber() {
+  var name = document.getElementById('i-name').value.trim();
+  hide('s1-err'); hide('num-result');
+  if (!name) { showErr('s1-err', '請輸入姓名'); return; }
+
+  var btn = document.getElementById('btn-query');
+  btn.innerHTML = '<span>查詢中...</span>';
+  btn.disabled = true;
+
+  fetch(API + '?action=query&name=' + encodeURIComponent(name))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.ok) {
+        show('s1-err');
+        btn.innerHTML = '<span>查詢我的編號</span><span>→</span>';
+        btn.disabled = false;
+        return;
+      }
+      document.getElementById('nr-name').textContent   = data.name;
+      document.getElementById('nr-poster').textContent = data.posterNum || '—';
+      document.getElementById('nr-player').textContent = data.playerNum || '—';
+      show('num-result');
+      document.getElementById('np1').classList.add('on');
+      if (data.playerNum) document.getElementById('i-num').value = data.playerNum;
+      btn.innerHTML = '<span>✓ 查詢成功</span>';
+      setTimeout(function() {
+        btn.innerHTML = '<span>查詢我的編號</span><span>→</span>';
+        btn.disabled = false;
+      }, 2800);
+    })
+    .catch(function() {
+      showErr('s1-err', '網路錯誤，請重新整理後再試。');
+      btn.innerHTML = '<span>查詢我的編號</span><span>→</span>';
+      btn.disabled = false;
+    });
+}
+
+function copyNum(type) {
+  var val = document.getElementById(type === 'poster' ? 'nr-poster' : 'nr-player').textContent;
+  if (val === '—') return;
+  navigator.clipboard.writeText(val).then(function() {
+    var btn = document.getElementById('copy-' + type);
+    btn.textContent = '✓ 已複製'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = '⎘ 複製'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function verifyCert() {
+  var num   = document.getElementById('i-num').value.trim().toUpperCase();
+  var email = document.getElementById('i-email').value.trim().toLowerCase();
+  hide('s2-err');
+  if (!num || !email) { showErr('s2-err', '請填寫選手編號與隊長 Email'); return; }
+
+  var btn = document.getElementById('btn-cert');
+  btn.disabled = true;
+  show('spinner');
+
+  fetch(API + '?num=' + encodeURIComponent(num) + '&email=' + encodeURIComponent(email))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      hide('spinner');
+      if (!data.ok) {
+        showErr('s2-err', data.msg || '驗證失敗，請重新確認。');
+        btn.disabled = false;
+        return;
+      }
+      document.getElementById('cert-name').textContent = data.name;
+      document.getElementById('cert-tag').textContent  = '選手編號　' + data.playerNum;
+      document.getElementById('btn-dl').href = data.certUrl;
+      document.getElementById('cert-form').style.display = 'none';
+      show('cert-result');
+      document.getElementById('np2').classList.add('on');
+    })
+    .catch(function() {
+      hide('spinner');
+      showErr('s2-err', '網路錯誤，請重新整理後再試。');
+      btn.disabled = false;
+    });
+}
+
+function resetCert() {
+  document.getElementById('cert-form').style.display = '';
+  hide('cert-result');
+  document.getElementById('i-num').value   = '';
+  document.getElementById('i-email').value = '';
+  document.getElementById('btn-dl').href   = '#';
+  document.getElementById('btn-cert').disabled = false;
+}
+
+function show(id) { document.getElementById(id).classList.add('show'); }
+function hide(id) { document.getElementById(id).classList.remove('show'); }
+function showErr(id, msg) { var el = document.getElementById(id); el.textContent = msg; el.classList.add('show'); }
+function scrollTo2() { document.getElementById('card2').scrollIntoView({ behavior: 'smooth' }); }
+function scrollTo1() { document.querySelector('.card').scrollIntoView({ behavior: 'smooth' }); }
+
+document.getElementById('i-name').addEventListener('keydown', function(e) { if (e.key === 'Enter') queryNumber(); });
+document.getElementById('i-num').addEventListener('keydown',  function(e) { if (e.key === 'Enter') document.getElementById('i-email').focus(); });
+document.getElementById('i-email').addEventListener('keydown',function(e) { if (e.key === 'Enter') verifyCert(); });
+</script>
+</body>
+</html>
